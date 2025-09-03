@@ -13,6 +13,7 @@ const navLinks: NavLink[] = [
   { label: 'Browse', href: '/browse' },
   { label: 'Submit', href: '/submit' },
   { label: 'About', href: '/about' },
+  { label: 'Policies', href: '/policies' },
 ];
 
 export default function ScrollNavbar() {
