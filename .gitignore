@@ -75,3 +75,6 @@ scripts/
 *.tmp
 *.temp
 *.log
+
+
+# All temp files cleaned
