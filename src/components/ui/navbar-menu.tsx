@@ -28,7 +28,7 @@ export const MenuItem = ({
     <div onMouseEnter={() => setActive(item)} className="relative">
       <motion.p
         transition={{ duration: 0.3 }}
-        className="cursor-pointer text-black hover:opacity-[0.9] dark:text-white px-2 py-1"
+        className="cursor-pointer text-black hover:opacity-[0.9] dark:text-white px-1 sm:px-2 py-1 text-xs sm:text-sm"
       >
         {item}
       </motion.p>
@@ -43,7 +43,7 @@ export const MenuItem = ({
               <motion.div
                 transition={transition}
                 layoutId="active" // layoutId ensures smooth animation
-                className="bg-white dark:bg-black backdrop-blur-sm rounded-lg overflow-hidden border border-black/[0.2] dark:border-white/[0.2] shadow-lg min-w-[300px] max-w-[90vw] sm:max-w-[500px]"
+                className="bg-white dark:bg-black backdrop-blur-sm rounded-lg overflow-hidden border border-black/[0.2] dark:border-white/[0.2] shadow-lg min-w-[280px] max-w-[95vw] sm:max-w-[500px]"
               >
                 <motion.div
                   layout // layout ensures smooth animation
@@ -67,7 +67,7 @@ export const Menu = (props: {
   return (
     <nav
       onMouseLeave={() => props.setActive(null)}
-      className="relative rounded-full border border-transparent dark:bg-black dark:border-white/[0.2] bg-white shadow-lg flex justify-center space-x-2 px-4 py-2"
+      className="relative rounded-full border border-transparent dark:bg-black dark:border-white/[0.2] bg-white shadow-lg flex justify-center space-x-1 sm:space-x-2 px-2 sm:px-3 md:px-4 py-2 text-xs sm:text-sm"
     >
       {props.children}
     </nav>

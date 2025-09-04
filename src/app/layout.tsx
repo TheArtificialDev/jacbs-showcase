@@ -12,12 +12,13 @@ export const metadata: Metadata = baseMetadata(siteName);
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} antialiased text-neutral-900 bg-white dark:text-neutral-100 dark:bg-neutral-900`}> 
-        <ClientProviders />
-        <JournalNavbar />
-        <main>{children}</main>
-        <Footer />
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <body className={`${inter.className} antialiased text-white bg-black`}> 
+        <ClientProviders>
+          <JournalNavbar />
+          <main className="min-h-screen">{children}</main>
+          <Footer />
+        </ClientProviders>
       </body>
     </html>
   );

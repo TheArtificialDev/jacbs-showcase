@@ -6,18 +6,34 @@ export const siteDescription = 'A modern venue for showcasing and publishing cut
 
 export function baseMetadata(title?: string, description?: string): Metadata {
   const t = title ? `${title} | ${siteName}` : siteName;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  
   return {
+    metadataBase: new URL(siteUrl),
     title: t,
     description: description || siteDescription,
+    icons: {
+      icon: '/JACBS.png',
+      shortcut: '/JACBS.png',
+      apple: '/JACBS.png',
+    },
     alternates: {
-      canonical: process.env.NEXT_PUBLIC_SITE_URL,
+      canonical: siteUrl,
     },
     openGraph: {
       title: t,
       description: description || siteDescription,
       siteName,
-      url: process.env.NEXT_PUBLIC_SITE_URL,
+      url: siteUrl,
       type: 'website',
+      images: [
+        {
+          url: '/JACBS.png',
+          width: 1200,
+          height: 630,
+          alt: siteName,
+        }
+      ],
     },
     robots: {
       index: true,

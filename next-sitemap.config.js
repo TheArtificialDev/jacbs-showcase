@@ -1,8 +1,20 @@
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+  siteUrl: 'https://jacbs.in',
   generateRobotsTxt: true,
-  exclude: ['/api/*'],
+  exclude: ['/api/*', '/demo', '/etheral-demo'],
   changefreq: 'weekly',
   priority: 0.7,
+  robotsTxtOptions: {
+    policies: [
+      {
+        userAgent: '*',
+        allow: '/',
+        disallow: ['/api/', '/demo/', '/etheral-demo/'],
+      },
+    ],
+    additionalSitemaps: [
+      'https://jacbs.in/sitemap.xml',
+    ],
+  },
 };

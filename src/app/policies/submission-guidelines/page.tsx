@@ -154,7 +154,7 @@ export default function SubmissionGuidelinesPage() {
         <p>JACBS uses a modified APA style for citations and references:</p>
         <ul>
           <li><strong>In-text Citations</strong>: Author-date format (Smith, 2023)</li>
-          <li><strong>Multiple Authors</strong>: (Smith & Jones, 2023) or (Smith et al., 2023)</li>
+          <li><strong>Multiple Authors</strong>: (Smith &amp; Jones, 2023) or (Smith et al., 2023)</li>
           <li><strong>Direct Quotes</strong>: Include page numbers (Smith, 2023, p. 15)</li>
           <li><strong>Reference List</strong>: Alphabetical order by first author's surname</li>
         </ul>

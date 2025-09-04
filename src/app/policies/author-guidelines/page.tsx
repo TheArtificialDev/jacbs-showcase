@@ -178,7 +178,7 @@ export default function AuthorGuidelinesPage() {
         <h3>Text Formatting</h3>
         <ul>
           <li><strong>Emphasis</strong>: Use italics, not bold or underlining</li>
-          <li><strong>Quotations</strong>: Use quotation marks for short quotes, block format for >40 words</li>
+          <li><strong>Quotations</strong>: Use quotation marks for short quotes, block format for &gt;40 words</li>
           <li><strong>Numbers</strong>: Spell out numbers below 10, use numerals for 10 and above</li>
           <li><strong>Abbreviations</strong>: Define on first use, then use consistently</li>
           <li><strong>Greek Letters</strong>: Use Symbol font or proper Unicode characters</li>
@@ -195,7 +195,7 @@ export default function AuthorGuidelinesPage() {
           <li>Simple horizontal lines only (no vertical lines or shading)</li>
           <li>Clear, descriptive column headers</li>
           <li>Consistent decimal places for numerical data</li>
-          <li>Statistical significance indicators (*p < 0.05, **p < 0.01)</li>
+          <li>Statistical significance indicators (*p &lt; 0.05, **p &lt; 0.01)</li>
         </ul>
 
         <h4>Table Numbering and Titles:</h4>
@@ -252,7 +252,7 @@ export default function AuthorGuidelinesPage() {
         <h4>In-Text Citations:</h4>
         <ul>
           <li><strong>Single Author</strong>: (Smith, 2023) or Smith (2023)</li>
-          <li><strong>Two Authors</strong>: (Smith & Jones, 2023) or Smith and Jones (2023)</li>
+          <li><strong>Two Authors</strong>: (Smith &amp; Jones, 2023) or Smith and Jones (2023)</li>
           <li><strong>Three or More</strong>: (Smith et al., 2023) or Smith et al. (2023)</li>
           <li><strong>Multiple Citations</strong>: (Jones, 2022; Smith, 2023) in chronological order</li>
           <li><strong>Direct Quotes</strong>: (Smith, 2023, p. 15) with page number</li>
@@ -269,13 +269,13 @@ export default function AuthorGuidelinesPage() {
         <h3>Reference List Format</h3>
         
         <h4>Journal Articles:</h4>
-        <p>Author, A. A., Author, B. B., & Author, C. C. (Year). Title of article. <em>Journal Name</em>, <em>Volume</em>(Issue), pages. https://doi.org/xx.xxxx/xxxxxx</p>
+        <p>Author, A. A., Author, B. B., &amp; Author, C. C. (Year). Title of article. <em>Journal Name</em>, <em>Volume</em>(Issue), pages. https://doi.org/xx.xxxx/xxxxxx</p>
 
         <h4>Books:</h4>
         <p>Author, A. A. (Year). <em>Title of book: Subtitle if any</em> (Edition if not first). Publisher Name.</p>
 
         <h4>Book Chapters:</h4>
-        <p>Author, A. A. (Year). Title of chapter. In B. B. Editor & C. C. Editor (Eds.), <em>Title of book</em> (pp. pages). Publisher Name.</p>
+        <p>Author, A. A. (Year). Title of chapter. In B. B. Editor &amp; C. C. Editor (Eds.), <em>Title of book</em> (pp. pages). Publisher Name.</p>
 
         <h4>Conference Proceedings:</h4>
         <p>Author, A. A. (Year). Title of paper. In <em>Proceedings of Conference Name</em> (pp. pages). Publisher Name. https://doi.org/xx.xxxx/xxxxxx</p>

@@ -1,89 +1,100 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import AnimatedSection from '@/components/AnimatedSection';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { getSupabaseBrowserClient } from '@/lib/supabase';
-import { toast } from 'sonner';
-
-const authSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-});
-
-type AuthInput = z.infer<typeof authSchema>;
+import PaperSubmissionForm from '@/components/PaperSubmissionForm';
+import { FuturisticHero } from '@/components/ui/hero-futuristic';
+import { Lock, UserPlus, ArrowRight, FileText } from 'lucide-react';
 
 export default function SubmitClient() {
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<AuthInput>({ resolver: zodResolver(authSchema) });
+  const { user, loading } = useAuth();
+  const router = useRouter();
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
 
-  const onSubmit = async (values: AuthInput) => {
-    const supabase = getSupabaseBrowserClient();
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-      toast.error('Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.');
-      return;
+  useEffect(() => {
+    if (!loading && !user) {
+      setShowAuthPrompt(true);
     }
-    try {
-      if (mode === 'signup') {
-        const { error } = await supabase.auth.signUp({ email: values.email, password: values.password });
-        if (error) throw error;
-        toast.success('Check your email to confirm your account.');
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email: values.email, password: values.password });
-        if (error) throw error;
-        toast.success('Signed in! (Submission form would appear here.)');
-      }
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'Authentication failed';
-      toast.error(msg);
-    }
-  };
+  }, [user, loading]);
 
-  return (
-    <div>
-      <AnimatedSection>
-        <div className="py-12">
-          <h1 className="text-2xl font-semibold tracking-tight">Submit Your Paper</h1>
-          <p className="mt-2 text-neutral-700">Sign in or create an account to submit your manuscript.</p>
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
-          <div className="mt-6 max-w-md">
-            <div className="flex gap-2 mb-4">
-              <button onClick={() => setMode('signin')} className={`px-3 py-1 border rounded ${mode === 'signin' ? 'bg-black text-white' : ''}`}>
-                Sign In
-              </button>
-              <button onClick={() => setMode('signup')} className={`px-3 py-1 border rounded ${mode === 'signup' ? 'bg-black text-white' : ''}`}>
-                Sign Up
-              </button>
+  if (!user && showAuthPrompt) {
+    return (
+      <FuturisticHero className="min-h-screen">
+        <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
+          <div className="max-w-md w-full space-y-8">
+            <div className="glass-morphism p-8 shadow-2xl text-center">
+              <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-gradient-to-r from-blue-600 to-purple-600 shadow-lg mb-6">
+                <FileText className="h-8 w-8 text-white" />
+              </div>
+              
+              <h2 className="text-3xl font-extrabold gradient-text mb-4">
+                Submit Your Research
+              </h2>
+              
+              <p className="text-gray-300 mb-8">
+                To submit your paper to JACBS, you need to have an account. Please sign in or create a new account to continue.
+              </p>
+
+              <div className="space-y-4">
+                <button
+                  onClick={() => router.push('/auth/login')}
+                  className="w-full flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
+                >
+                  <Lock className="h-4 w-4 mr-2" />
+                  Sign In
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </button>
+
+                <button
+                  onClick={() => router.push('/auth/signup')}
+                  className="w-full flex items-center justify-center px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Create Account
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </button>
+              </div>
+
+              <div className="mt-6 pt-6 border-t border-gray-600">
+                <p className="text-sm text-gray-400">
+                  Need help? Contact us at{' '}
+                  <a href="mailto:submit@jacbs.org" className="text-blue-400 hover:text-blue-300 transition-colors">
+                    submit@jacbs.org
+                  </a>
+                </p>
+              </div>
             </div>
-
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
-              <div>
-                <label className="block text-sm">Email</label>
-                <input type="email" className="w-full border rounded px-3 py-2" {...register('email')} />
-                {errors.email && <p className="text-sm text-red-600">{errors.email.message}</p>}
-              </div>
-              <div>
-                <label className="block text-sm">Password</label>
-                <input type="password" className="w-full border rounded px-3 py-2" {...register('password')} />
-                {errors.password && <p className="text-sm text-red-600">{errors.password.message}</p>}
-              </div>
-              <button type="submit" disabled={isSubmitting} className="px-4 py-2 rounded bg-black text-white text-sm disabled:opacity-60">
-                {mode === 'signup' ? 'Create account' : 'Sign in'}
-              </button>
-            </form>
-
-            <p className="text-sm text-neutral-600 mt-6">
-              After signing in, you will see a submission form here (title, authors, abstract, PDF upload).
-              For now, papers are hardcoded and downloads are direct.
-            </p>
           </div>
         </div>
-      </AnimatedSection>
+      </FuturisticHero>
+    );
+  }
+
+  // User is authenticated, show the submission form
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-indigo-900">
+      <div className="container mx-auto px-4 py-12">
+        <AnimatedSection>
+          <div className="text-center mb-12">
+            <h1 className="text-4xl font-bold text-white mb-4">Submit Your Paper</h1>
+            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+              Welcome, {user?.user_metadata?.full_name || user?.email}. 
+              Submit your research to the Journal for Advanced Computational and Business Studies.
+            </p>
+          </div>
+
+          <PaperSubmissionForm />
+        </AnimatedSection>
+      </div>
     </div>
   );
 }

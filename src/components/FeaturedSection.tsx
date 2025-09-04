@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { EvervaultCard, Icon } from "@/components/ui/evervault-card";
+import { FeaturedCard } from "@/components/ui/featured-card";
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 import { motion } from "framer-motion";
 
@@ -58,51 +58,11 @@ export function FeaturedSection() {
         {/* Articles Grid */}
         <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
           {featuredArticles.map((article, index) => (
-            <motion.div
-              key={article.id}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.2 }}
-              className="group cursor-pointer"
-            >
-              {/* Card Container */}
-              <div className="border border-white/[0.2] dark:border-white/[0.2] flex flex-col items-start max-w-sm mx-auto p-4 relative h-[30rem] bg-black/[0.3] backdrop-blur-sm rounded-lg hover:bg-black/[0.5] transition-all duration-300">
-                {/* Corner Icons */}
-                <Icon className="absolute h-6 w-6 -top-3 -left-3 text-white" />
-                <Icon className="absolute h-6 w-6 -bottom-3 -left-3 text-white" />
-                <Icon className="absolute h-6 w-6 -top-3 -right-3 text-white" />
-                <Icon className="absolute h-6 w-6 -bottom-3 -right-3 text-white" />
-
-                {/* Evervault Card */}
-                <div className="h-48 w-full mb-4">
-                  <EvervaultCard text={article.cardText} />
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 flex flex-col justify-between">
-                  <div>
-                    <h3 className="text-white text-lg font-semibold mb-2 group-hover:text-teal-300 transition-colors">
-                      {article.title}
-                    </h3>
-                    <h4 className="text-teal-400 text-sm font-medium mb-3">
-                      {article.subtitle}
-                    </h4>
-                    <p className="text-gray-300 text-sm leading-relaxed">
-                      {article.description}
-                    </p>
-                  </div>
-                  
-                  {/* Read More Button */}
-                  <div className="mt-6">
-                    <InteractiveHoverButton 
-                      text="Read Research"
-                      variant="teal"
-                      className="w-40 h-10 text-xs text-white"
-                    />
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+            <FeaturedCard 
+              key={article.id} 
+              article={article} 
+              index={index} 
+            />
           ))}
         </div>
 

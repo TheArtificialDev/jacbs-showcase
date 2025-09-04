@@ -88,7 +88,7 @@ export default function PoliciesPage() {
     <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8">
       <AnimatedSection>
         <div className="py-12">
-          <h1 className="text-4xl font-bold tracking-tight mb-4">Policies & Guidelines</h1>
+          <h1 className="text-4xl font-bold tracking-tight mb-4 font-mono text-white">Policies & Guidelines</h1>
           <p className="text-neutral-700 text-lg mb-12 max-w-3xl">
             Comprehensive policies and guidelines governing the Journal for Advanced Computational 
             and Business Studies. These documents ensure transparency, ethical standards, and 
@@ -100,7 +100,7 @@ export default function PoliciesPage() {
             
             return (
               <section key={category} className="mb-12">
-                <h2 className="text-2xl font-semibold mb-6 border-b border-neutral-200 pb-2">
+                <h2 className="text-2xl font-semibold mb-6 border-b border-gray-800 pb-2 font-mono text-white">
                   {category}
                 </h2>
                 <div className="grid md:grid-cols-2 gap-6">
@@ -108,15 +108,15 @@ export default function PoliciesPage() {
                     <Link 
                       key={index}
                       href={policy.href}
-                      className="block p-6 border border-neutral-200 rounded-lg hover:border-neutral-300 hover:shadow-md transition-all duration-200"
+                      className="block p-6 border border-gray-800 rounded-lg hover:border-gray-600 hover:shadow-md transition-all duration-200 bg-black"
                     >
-                      <h3 className="text-lg font-medium mb-2 text-neutral-900">
+                      <h3 className="text-lg font-medium mb-2 text-white font-mono">
                         {policy.title}
                       </h3>
-                      <p className="text-neutral-600 text-sm leading-relaxed">
+                      <p className="text-gray-300 text-sm leading-relaxed">
                         {policy.description}
                       </p>
-                      <div className="mt-3 text-blue-600 text-sm font-medium">
+                      <div className="mt-3 text-teal-400 text-sm font-medium">
                         Read Policy →
                       </div>
                     </Link>
@@ -126,22 +126,22 @@ export default function PoliciesPage() {
             );
           })}
 
-          <section className="mt-16 bg-neutral-50 p-8 rounded-lg">
-            <h2 className="text-2xl font-semibold mb-4">Questions About Our Policies?</h2>
-            <p className="text-neutral-700 mb-6">
+          <section className="mt-16 bg-black border border-gray-800 p-8 rounded-lg">
+            <h2 className="text-2xl font-semibold mb-4 font-mono text-white">Questions About Our Policies?</h2>
+            <p className="text-gray-300 mb-6">
               If you have questions about any of our policies or need clarification on specific 
               requirements, our editorial team is here to help.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link 
                 href="/policies/contact-support"
-                className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors text-center"
+                className="inline-block bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 transition-colors text-center"
               >
                 Contact Editorial Office
               </Link>
               <Link 
                 href="/submit"
-                className="inline-block border border-neutral-300 text-neutral-700 px-6 py-3 rounded-lg hover:bg-neutral-100 transition-colors text-center"
+                className="inline-block border border-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors text-center"
               >
                 Submit Your Research
               </Link>

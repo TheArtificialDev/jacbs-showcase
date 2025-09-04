@@ -29,7 +29,7 @@ export function PolicyPage({ title, children, lastUpdated, effectiveDate }: Poli
 
           {/* Header */}
           <header className="mb-12 border-b border-neutral-200 pb-8">
-            <h1 className="text-4xl font-bold tracking-tight mb-4">{title}</h1>
+            <h1 className="text-4xl font-bold tracking-tight mb-4 font-mono text-white">{title}</h1>
             <div className="flex flex-col sm:flex-row sm:items-center gap-4 text-sm text-neutral-600">
               {effectiveDate && (
                 <div>
@@ -45,7 +45,7 @@ export function PolicyPage({ title, children, lastUpdated, effectiveDate }: Poli
           </header>
 
           {/* Content */}
-          <div className="prose prose-neutral max-w-none">
+          <div className="prose prose-neutral max-w-none policy-content">
             {children}
           </div>
 
