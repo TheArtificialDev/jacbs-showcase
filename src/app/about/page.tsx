@@ -195,8 +195,7 @@ export default function AboutPage() {
                     Global Academic Publishers
                   </p>
                   <p className="text-white text-sm">
-                    Email: editorial@jacbs.org<br/>
-                    Phone: +1 (555) 123-4567
+                    Email: editorial@jacbs.in
                   </p>
                 </div>
                 <div>
@@ -206,7 +205,7 @@ export default function AboutPage() {
                     review process, or publication guidelines.
                   </p>
                   <p className="text-white text-sm">
-                    Email: submissions@jacbs.org<br/>
+                    Email: submissions@jacbs.in<br/>
                     Response time: 24-48 hours
                   </p>
                 </div>
