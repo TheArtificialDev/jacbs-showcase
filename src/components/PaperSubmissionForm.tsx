@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { createPaperSubmission, uploadManuscript, PaperAuthor } from '@/lib/database';
 import { Upload, FileText, Users, BookOpen, Tag, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 
 interface SubmissionFormData {
@@ -12,7 +13,6 @@ interface SubmissionFormData {
   category: string;
   paperType: string;
   manuscriptFile: File | null;
-  supplementaryFiles: File[];
   conflicts: string;
   ethicsStatement: string;
   fundingInfo: string;
@@ -51,7 +51,6 @@ export default function PaperSubmissionForm() {
     category: '',
     paperType: '',
     manuscriptFile: null,
-    supplementaryFiles: [],
     conflicts: '',
     ethicsStatement: '',
     fundingInfo: '',
@@ -63,7 +62,6 @@ export default function PaperSubmissionForm() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
 
   const categories = [
     'Artificial Intelligence',
@@ -103,21 +101,14 @@ export default function PaperSubmissionForm() {
     }));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'manuscript' | 'supplementary') => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
-    if (type === 'manuscript') {
-      setFormData(prev => ({
-        ...prev,
-        manuscriptFile: files[0]
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        supplementaryFiles: Array.from(files)
-      }));
-    }
+    setFormData(prev => ({
+      ...prev,
+      manuscriptFile: files[0]
+    }));
   };
 
   const addAuthor = () => {
@@ -199,43 +190,68 @@ export default function PaperSubmissionForm() {
 
   const handleSubmit = async () => {
     if (!validateStep(currentStep)) return;
+    if (!user) return;
 
     setIsSubmitting(true);
     setError('');
 
     try {
-      // Prepare the submission data
-      const submissionData = {
-        title: formData.title,
-        abstract: formData.abstract,
-        keywords: formData.keywords,
-        category: formData.category,
-        paperType: formData.paperType,
-        authors: formData.authors.map(author => ({
-          firstName: author.firstName,
-          lastName: author.lastName,
-          email: author.email,
-          affiliation: author.affiliation,
-          orcid: author.orcid,
-          isCorresponding: author.isCorresponding,
-        })),
-        conflicts: formData.conflicts,
-        ethicsStatement: formData.ethicsStatement,
-        fundingInfo: formData.fundingInfo,
-        acknowledgments: formData.acknowledgments,
-        suggestedReviewers: formData.suggestedReviewers,
-        coverLetter: formData.coverLetter,
-      };
+      let manuscriptFileUrl = '';
 
-      // TODO: Implement file uploads here
-      // const { submitPaper } = await import('@/lib/submissions');
-      // const result = await submitPaper(submissionData);
-      
-      // For now, simulate the submission
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      setSuccess('Your paper has been submitted successfully! You will receive a confirmation email shortly.');
-      setCurrentStep(6); // Success step
+      // Upload manuscript file if present
+      if (formData.manuscriptFile) {
+        const { fileName, publicUrl, error: uploadError } = await uploadManuscript(user.id, formData.manuscriptFile);
+        
+        if (uploadError) {
+          setError('Failed to upload manuscript file. Please try again.');
+          setIsSubmitting(false);
+          return;
+        }
+        
+        if (fileName && publicUrl) {
+          manuscriptFileUrl = publicUrl;
+        }
+      }
+
+      // Prepare authors data
+      const authorsData: Omit<PaperAuthor, 'id' | 'paper_id'>[] = formData.authors.map((author, index) => ({
+        first_name: author.firstName,
+        last_name: author.lastName,
+        email: author.email,
+        affiliation: author.affiliation,
+        orcid: author.orcid,
+        is_corresponding: author.isCorresponding,
+        author_order: index + 1,
+      }));
+
+      // Create paper submission
+      const { submission, submissionId, error: submissionError } = await createPaperSubmission(
+        {
+          title: formData.title,
+          abstract: formData.abstract,
+          keywords: formData.keywords.split(',').map(k => k.trim()).filter(k => k.length > 0),
+          authors: formData.authors.map(author => ({
+            first_name: author.firstName,
+            last_name: author.lastName,
+            email: author.email,
+            institution: author.affiliation,
+            is_corresponding: author.isCorresponding,
+          })),
+          corresponding_author: user.id,
+          paper_type: formData.paperType as 'research' | 'review' | 'case_study' | 'technical_note' | 'editorial',
+          journal_section: formData.category,
+          file_url: manuscriptFileUrl,
+        },
+        authorsData
+      );
+
+      if (submissionError) {
+        setError('Failed to submit paper. Please try again.');
+        console.error('Submission error:', submissionError);
+      } else if (submission && submissionId) {
+        setCurrentStep(6); // Success step
+        // Success message with submission ID is displayed in step 6
+      }
     } catch (err) {
       setError('Failed to submit paper. Please try again.');
       console.error('Submission error:', err);
@@ -264,7 +280,7 @@ export default function PaperSubmissionForm() {
                 name="title"
                 value={formData.title}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-white/90 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+                className="w-full px-4 py-3 bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
                 placeholder="Enter your paper title"
                 required
               />
@@ -279,7 +295,7 @@ export default function PaperSubmissionForm() {
                 value={formData.abstract}
                 onChange={handleInputChange}
                 rows={8}
-                className="w-full px-4 py-3 bg-white/90 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 resize-none"
+                className="w-full px-4 py-3 bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 resize-none"
                 placeholder="Enter your abstract (max 300 words)"
                 required
               />
@@ -297,7 +313,7 @@ export default function PaperSubmissionForm() {
                 name="keywords"
                 value={formData.keywords}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-white/90 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
+                className="w-full px-4 py-3 bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200"
                 placeholder="Enter keywords separated by commas"
                 required
               />
@@ -341,7 +357,7 @@ export default function PaperSubmissionForm() {
                       type="text"
                       value={author.firstName}
                       onChange={(e) => updateAuthor(author.id, 'firstName', e.target.value)}
-                      className="w-full px-3 py-2 bg-white/90 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                      className="w-full px-3 py-2 bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                       required
                     />
                   </div>
@@ -353,7 +369,7 @@ export default function PaperSubmissionForm() {
                       type="text"
                       value={author.lastName}
                       onChange={(e) => updateAuthor(author.id, 'lastName', e.target.value)}
-                      className="w-full px-3 py-2 bg-white/90 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                      className="w-full px-3 py-2 bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                       required
                     />
                   </div>
@@ -368,7 +384,7 @@ export default function PaperSubmissionForm() {
                       type="email"
                       value={author.email}
                       onChange={(e) => updateAuthor(author.id, 'email', e.target.value)}
-                      className="w-full px-3 py-2 bg-white/90 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                      className="w-full px-3 py-2 bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                       required
                     />
                   </div>
@@ -380,7 +396,7 @@ export default function PaperSubmissionForm() {
                       type="text"
                       value={author.orcid}
                       onChange={(e) => updateAuthor(author.id, 'orcid', e.target.value)}
-                      className="w-full px-3 py-2 bg-white/90 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                      className="w-full px-3 py-2 bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                       placeholder="0000-0000-0000-0000"
                     />
                   </div>
@@ -394,7 +410,7 @@ export default function PaperSubmissionForm() {
                     type="text"
                     value={author.affiliation}
                     onChange={(e) => updateAuthor(author.id, 'affiliation', e.target.value)}
-                    className="w-full px-3 py-2 bg-white/90 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    className="w-full px-3 py-2 bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                     placeholder="University/Institution name"
                     required
                   />
@@ -442,7 +458,7 @@ export default function PaperSubmissionForm() {
                 name="category"
                 value={formData.category}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-white/90 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                 required
               >
                 <option value="">Select a category</option>
@@ -460,7 +476,7 @@ export default function PaperSubmissionForm() {
                 name="paperType"
                 value={formData.paperType}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-white/90 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                 required
               >
                 <option value="">Select paper type</option>
@@ -489,7 +505,7 @@ export default function PaperSubmissionForm() {
                 <input
                   type="file"
                   accept=".pdf,.doc,.docx"
-                  onChange={(e) => handleFileChange(e, 'manuscript')}
+                  onChange={handleFileChange}
                   className="hidden"
                   id="manuscript-upload"
                   required
@@ -502,39 +518,6 @@ export default function PaperSubmissionForm() {
                   <p className="text-sm text-gray-400">PDF, DOC, or DOCX (max 25MB)</p>
                 </label>
               </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                Supplementary Files (Optional)
-              </label>
-              <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-teal-500 transition-colors">
-                <input
-                  type="file"
-                  multiple
-                  accept=".pdf,.doc,.docx,.xlsx,.csv,.zip,.rar"
-                  onChange={(e) => handleFileChange(e, 'supplementary')}
-                  className="hidden"
-                  id="supplementary-upload"
-                />
-                <label htmlFor="supplementary-upload" className="cursor-pointer">
-                  <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-300 mb-1">
-                    {formData.supplementaryFiles.length > 0 
-                      ? `${formData.supplementaryFiles.length} file(s) selected`
-                      : 'Click to upload supplementary files'
-                    }
-                  </p>
-                  <p className="text-sm text-gray-400">Any additional files (datasets, code, etc.)</p>
-                </label>
-              </div>
-              {formData.supplementaryFiles.length > 0 && (
-                <div className="mt-2 space-y-1">
-                  {formData.supplementaryFiles.map((file, index) => (
-                    <p key={index} className="text-sm text-gray-400">• {file.name}</p>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         );
@@ -557,7 +540,7 @@ export default function PaperSubmissionForm() {
                 value={formData.coverLetter}
                 onChange={handleInputChange}
                 rows={4}
-                className="w-full px-4 py-3 bg-white/90 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
+                className="w-full px-4 py-3 bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
                 placeholder="Brief cover letter explaining the significance of your work..."
               />
             </div>
@@ -571,7 +554,7 @@ export default function PaperSubmissionForm() {
                 value={formData.conflicts}
                 onChange={handleInputChange}
                 rows={3}
-                className="w-full px-4 py-3 bg-white/90 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
+                className="w-full px-4 py-3 bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
                 placeholder="List any potential conflicts of interest or state 'None'"
               />
             </div>
@@ -585,7 +568,7 @@ export default function PaperSubmissionForm() {
                 value={formData.fundingInfo}
                 onChange={handleInputChange}
                 rows={3}
-                className="w-full px-4 py-3 bg-white/90 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
+                className="w-full px-4 py-3 bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
                 placeholder="List funding sources, grant numbers, etc."
               />
             </div>
@@ -599,7 +582,7 @@ export default function PaperSubmissionForm() {
                 value={formData.suggestedReviewers}
                 onChange={handleInputChange}
                 rows={3}
-                className="w-full px-4 py-3 bg-white/90 border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
+                className="w-full px-4 py-3 bg-gray-800 text-white border border-gray-600 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
                 placeholder="Suggest 3-5 potential reviewers with their email addresses"
               />
             </div>
@@ -612,14 +595,17 @@ export default function PaperSubmissionForm() {
             <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto" />
             <h2 className="text-2xl font-bold text-white">Submission Successful!</h2>
             <p className="text-gray-300 max-w-md mx-auto">
-              Thank you for submitting your paper to JACBS. You will receive a confirmation email shortly with your submission ID and next steps.
+              Thank you for submitting your paper to JACBS. You will receive a confirmation email shortly with your submission details and next steps.
             </p>
             <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
               <p className="text-green-400 text-sm">
-                <strong>Submission ID:</strong> JACBS-{Date.now()}
+                <strong>Submission Title:</strong> {formData.title}
               </p>
               <p className="text-green-400 text-sm mt-1">
                 <strong>Status:</strong> Under Initial Review
+              </p>
+              <p className="text-green-400 text-sm mt-1">
+                <strong>Submitted:</strong> {new Date().toLocaleDateString()}
               </p>
             </div>
           </div>

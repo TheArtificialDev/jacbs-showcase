@@ -69,7 +69,7 @@ function Navbar({ className }: { className?: string }) {
             <HoveredLink href="/about">About JACBS</HoveredLink>
             <HoveredLink href="/submit">Submit Paper</HoveredLink>
             <HoveredLink href="/editorial-board">Editorial Board</HoveredLink>
-            <HoveredLink href="/guidelines">Submission Guidelines</HoveredLink>
+            <HoveredLink href="/policies/submission-guidelines">Submission Guidelines</HoveredLink>
           </div>
         </MenuItem>
         <MenuItem setActive={setActive} active={active} item="Partners">

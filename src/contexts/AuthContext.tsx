@@ -10,8 +10,10 @@ interface AuthContextType {
   loading: boolean;
   signUp: (email: string, password: string, metadata?: any) => Promise<{ error: AuthError | null }>;
   signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
+  signInWithGoogle: () => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<{ error: AuthError | null }>;
   resetPassword: (email: string) => Promise<{ error: AuthError | null }>;
+  updateProfile: (updates: any) => Promise<{ error: AuthError | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -98,6 +100,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const signInWithGoogle = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`
+        }
+      });
+      return { error };
+    } catch (error) {
+      return { error: error as AuthError };
+    }
+  };
+
+  const updateProfile = async (updates: any) => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: updates
+      });
+      
+      if (!error && user) {
+        // Also update the user_profiles table
+        const { error: profileError } = await supabase
+          .from('user_profiles')
+          .update(updates)
+          .eq('id', user.id);
+        
+        if (profileError) {
+          console.error('Error updating profile:', profileError);
+          return { error: profileError as unknown as AuthError };
+        }
+      }
+      
+      return { error };
+    } catch (error) {
+      return { error: error as AuthError };
+    }
+  };
+
   const resetPassword = async (email: string) => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -115,8 +156,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loading,
     signUp,
     signIn,
+    signInWithGoogle,
     signOut,
     resetPassword,
+    updateProfile,
   };
 
   return (

@@ -37,7 +37,7 @@ export default function ResetPasswordPage() {
       } else {
         setSuccess('Password reset instructions have been sent to your email address.');
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred');
     } finally {
       setIsLoading(false);

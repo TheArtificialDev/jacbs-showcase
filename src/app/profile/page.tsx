@@ -3,32 +3,61 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { User, Mail, Calendar, Save, ArrowLeft } from 'lucide-react';
+import { User, Mail, Calendar, Save, ArrowLeft, Building, Phone, GraduationCap, Users } from 'lucide-react';
+import { getUserProfile, updateUserProfile, UserProfile } from '@/lib/database';
 import Link from 'next/link';
 
 export default function ProfilePage() {
-  const { user, loading } = useAuth();
+  const { user, loading, updateProfile } = useAuth();
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    first_name: '',
+    last_name: '',
     email: '',
+    institution: '',
+    department: '',
+    phone: '',
+    orcid_id: '',
+    research_interests: '',
+    academic_title: '',
+    bio: '',
   });
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [loadingProfile, setLoadingProfile] = useState(true);
 
   useEffect(() => {
-    if (user) {
-      setFormData({
-        firstName: user.user_metadata?.first_name || '',
-        lastName: user.user_metadata?.last_name || '',
-        email: user.email || '',
-      });
-    }
+    const fetchProfile = async () => {
+      if (user) {
+        const { profile: userProfile, error } = await getUserProfile(user.id);
+        if (userProfile) {
+          setProfile(userProfile);
+          setFormData({
+            first_name: userProfile.first_name || '',
+            last_name: userProfile.last_name || '',
+            email: userProfile.email || user.email || '',
+            institution: userProfile.institution || '',
+            department: userProfile.department || '',
+            phone: userProfile.phone || '',
+            orcid_id: userProfile.orcid_id || '',
+            research_interests: userProfile.research_interests || '',
+            academic_title: userProfile.academic_title || '',
+            bio: userProfile.bio || '',
+          });
+        } else if (error) {
+          console.error('Error fetching profile:', error);
+          setMessage('Error loading profile. Please try again.');
+        }
+        setLoadingProfile(false);
+      }
+    };
+
+    fetchProfile();
   }, [user]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData(prev => ({
       ...prev,
       [e.target.name]: e.target.value
@@ -40,21 +69,35 @@ export default function ProfilePage() {
     setMessage('');
     
     try {
-      // Here you would update the user profile in Supabase
-      // For now, we'll just simulate a save
-      setTimeout(() => {
-        setMessage('Profile updated successfully!');
-        setIsEditing(false);
-        setIsSaving(false);
-      }, 1000);
+      if (user) {
+        // Update profile in database
+        const { profile: updatedProfile, error } = await updateUserProfile(user.id, formData);
+
+        if (error) {
+          setMessage('Error updating profile. Please try again.');
+          console.error('Error updating profile:', error);
+        } else if (updatedProfile) {
+          setProfile(updatedProfile);
+          setMessage('Profile updated successfully!');
+          setIsEditing(false);
+          
+          // Also update auth metadata
+          await updateProfile({
+            first_name: formData.first_name,
+            last_name: formData.last_name,
+            full_name: `${formData.first_name} ${formData.last_name}`,
+          });
+        }
+      }
     } catch (error) {
       console.error('Error updating profile:', error);
       setMessage('Error updating profile. Please try again.');
+    } finally {
       setIsSaving(false);
     }
   };
 
-  if (loading) {
+  if (loading || loadingProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-400"></div>
@@ -127,38 +170,180 @@ export default function ProfilePage() {
 
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                   <div>
-                    <label htmlFor="firstName" className="block text-sm font-medium text-white">
+                    <label htmlFor="first_name" className="block text-sm font-medium text-white">
                       First Name
                     </label>
                     {isEditing ? (
                       <input
                         type="text"
-                        name="firstName"
-                        id="firstName"
-                        value={formData.firstName}
+                        name="first_name"
+                        id="first_name"
+                        value={formData.first_name}
                         onChange={handleChange}
                         className="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md shadow-sm text-white focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                       />
                     ) : (
-                      <p className="mt-1 text-sm text-white">{formData.firstName || 'Not provided'}</p>
+                      <p className="mt-1 text-sm text-white">{formData.first_name || 'Not provided'}</p>
                     )}
                   </div>
 
                   <div>
-                    <label htmlFor="lastName" className="block text-sm font-medium text-white">
+                    <label htmlFor="last_name" className="block text-sm font-medium text-white">
                       Last Name
                     </label>
                     {isEditing ? (
                       <input
                         type="text"
-                        name="lastName"
-                        id="lastName"
-                        value={formData.lastName}
+                        name="last_name"
+                        id="last_name"
+                        value={formData.last_name}
                         onChange={handleChange}
                         className="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md shadow-sm text-white focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                       />
                     ) : (
-                      <p className="mt-1 text-sm text-white">{formData.lastName || 'Not provided'}</p>
+                      <p className="mt-1 text-sm text-white">{formData.last_name || 'Not provided'}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="institution" className="block text-sm font-medium text-white">
+                      <Building className="h-4 w-4 inline mr-1" />
+                      Institution
+                    </label>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        name="institution"
+                        id="institution"
+                        value={formData.institution}
+                        onChange={handleChange}
+                        className="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md shadow-sm text-white focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                        placeholder="University/Institution"
+                      />
+                    ) : (
+                      <p className="mt-1 text-sm text-white">{formData.institution || 'Not provided'}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="department" className="block text-sm font-medium text-white">
+                      <Users className="h-4 w-4 inline mr-1" />
+                      Position/Department
+                    </label>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        name="department"
+                        id="department"
+                        value={formData.department}
+                        onChange={handleChange}
+                        className="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md shadow-sm text-white focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                        placeholder="Professor, Researcher, etc."
+                      />
+                    ) : (
+                      <p className="mt-1 text-sm text-white">{formData.department || 'Not provided'}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="phone" className="block text-sm font-medium text-white">
+                      <Phone className="h-4 w-4 inline mr-1" />
+                      Phone Number
+                    </label>
+                    {isEditing ? (
+                      <input
+                        type="tel"
+                        name="phone"
+                        id="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        className="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md shadow-sm text-white focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                        placeholder="+1 (555) 123-4567"
+                      />
+                    ) : (
+                      <p className="mt-1 text-sm text-white">{formData.phone || 'Not provided'}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="orcid_id" className="block text-sm font-medium text-white">
+                      ORCID iD
+                    </label>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        name="orcid_id"
+                        id="orcid_id"
+                        value={formData.orcid_id}
+                        onChange={handleChange}
+                        className="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md shadow-sm text-white focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                        placeholder="0000-0000-0000-0000"
+                      />
+                    ) : (
+                      <p className="mt-1 text-sm text-white">{formData.orcid_id || 'Not provided'}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="research_interests" className="block text-sm font-medium text-white">
+                      Research Interests
+                    </label>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        name="research_interests"
+                        id="research_interests"
+                        value={formData.research_interests}
+                        onChange={handleChange}
+                        className="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md shadow-sm text-white focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                        placeholder="AI, Machine Learning, etc."
+                      />
+                    ) : (
+                      <p className="mt-1 text-sm text-white">{formData.research_interests || 'Not provided'}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="academic_title" className="block text-sm font-medium text-white">
+                      <GraduationCap className="h-4 w-4 inline mr-1" />
+                      Highest                       Academic Title
+                    </label>
+                    {isEditing ? (
+                      <select
+                        name="academic_title"
+                        id="academic_title"
+                        value={formData.academic_title}
+                        onChange={handleChange}
+                        className="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md shadow-sm text-white focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                      >
+                        <option value="">Select degree</option>
+                        <option value="Bachelor's">Bachelor's</option>
+                        <option value="Master's">Master's</option>
+                        <option value="PhD">PhD</option>
+                        <option value="Postdoc">Postdoc</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    ) : (
+                      <p className="mt-1 text-sm text-white">{formData.academic_title || 'Not provided'}</p>
+                    )}
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label htmlFor="bio" className="block text-sm font-medium text-white">
+                      Bio/Research Interests
+                    </label>
+                    {isEditing ? (
+                      <textarea
+                        name="bio"
+                        id="bio"
+                        rows={4}
+                        value={formData.bio}
+                        onChange={handleChange}
+                        className="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md shadow-sm text-white focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm resize-none"
+                        placeholder="Brief description of your research interests and background..."
+                      />
+                    ) : (
+                      <p className="mt-1 text-sm text-white">{formData.bio || 'Not provided'}</p>
                     )}
                   </div>
 
@@ -182,12 +367,21 @@ export default function ProfilePage() {
                       onClick={() => {
                         setIsEditing(false);
                         setMessage('');
-                        // Reset form data
-                        setFormData({
-                          firstName: user.user_metadata?.first_name || '',
-                          lastName: user.user_metadata?.last_name || '',
-                          email: user.email || '',
-                        });
+                        // Reset form data to current profile
+                        if (profile) {
+                          setFormData({
+                            first_name: profile.first_name || '',
+                            last_name: profile.last_name || '',
+                            email: profile.email || user.email || '',
+                            institution: profile.institution || '',
+                            department: profile.department || '',
+                            phone: profile.phone || '',
+                            orcid_id: profile.orcid_id || '',
+                            research_interests: profile.research_interests || '',
+                            academic_title: profile.academic_title || '',
+                            bio: profile.bio || '',
+                          });
+                        }
                       }}
                       className="px-4 py-2 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-white bg-gray-800 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
                     >

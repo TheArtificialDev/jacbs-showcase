@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import AnimatedSection from '@/components/AnimatedSection';
 import PaperSubmissionForm from '@/components/PaperSubmissionForm';
 import { FuturisticHero } from '@/components/ui/hero-futuristic';
+import { GradientDots } from '@/components/ui/gradient-dots';
 import { Lock, UserPlus, ArrowRight, FileText } from 'lucide-react';
 
 export default function SubmitClient() {
@@ -81,19 +82,29 @@ export default function SubmitClient() {
 
   // User is authenticated, show the submission form
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-indigo-900">
-      <div className="container mx-auto px-4 py-12">
-        <AnimatedSection>
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-white mb-4">Submit Your Paper</h1>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Welcome, {user?.user_metadata?.full_name || user?.email}. 
-              Submit your research to the Journal for Advanced Computational and Business Studies.
-            </p>
-          </div>
+    <div className="relative min-h-screen overflow-hidden">
+      {/* Gradient Dots Background */}
+      <GradientDots 
+        duration={20} 
+        backgroundColor="rgb(0, 0, 0)" 
+        className="opacity-80"
+      />
+      
+      {/* Content */}
+      <div className="relative z-10 min-h-screen">
+        <div className="container mx-auto px-4 pt-24 pb-12">
+          <AnimatedSection>
+            <div className="text-center mb-12">
+              <h1 className="text-4xl font-bold text-white mb-4">Submit Your Paper</h1>
+              <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+                Welcome, {user?.user_metadata?.full_name || user?.email}. 
+                Submit your research to the Journal for Advanced Computational and Business Studies.
+              </p>
+            </div>
 
-          <PaperSubmissionForm />
-        </AnimatedSection>
+            <PaperSubmissionForm />
+          </AnimatedSection>
+        </div>
       </div>
     </div>
   );

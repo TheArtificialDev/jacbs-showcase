@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { Eye, EyeOff, Mail, Lock, AlertCircle } from 'lucide-react';
+import { FaGoogle } from 'react-icons/fa';
 import { FuturisticHero } from '@/components/ui/hero-futuristic';
 
 export default function LoginPage() {
@@ -13,7 +14,8 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn } = useAuth();
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const { signIn, signInWithGoogle } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -39,6 +41,24 @@ export default function LoginPage() {
       setError('An unexpected error occurred');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setError('');
+    setIsGoogleLoading(true);
+
+    try {
+      const { error } = await signInWithGoogle();
+      if (error) {
+        setError(error.message);
+      }
+      // Note: redirect happens automatically via the OAuth flow
+    } catch (error) {
+      console.error('Error signing in with Google:', error);
+      setError('An unexpected error occurred');
+    } finally {
+      setIsGoogleLoading(false);
     }
   };
 
@@ -155,7 +175,39 @@ export default function LoginPage() {
                 </button>
               </div>
 
-              <div className="text-center auth-form-field" style={{'--delay': 4} as any}>
+              {/* Divider */}
+              <div className="relative auth-form-field" style={{'--delay': 4.5} as any}>
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-600"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-transparent text-gray-400">Or continue with</span>
+                </div>
+              </div>
+
+              {/* Google Sign In */}
+              <div className="auth-form-field" style={{'--delay': 5} as any}>
+                <button
+                  type="button"
+                  onClick={handleGoogleSignIn}
+                  disabled={isGoogleLoading}
+                  className="group relative w-full flex justify-center py-4 px-4 border border-gray-600 text-sm font-medium rounded-lg text-gray-300 bg-transparent hover:bg-gray-800/50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg transform transition-all duration-200 hover:scale-105"
+                >
+                  {isGoogleLoading ? (
+                    <div className="flex items-center space-x-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <span>Signing in with Google...</span>
+                    </div>
+                  ) : (
+                    <span className="flex items-center space-x-2">
+                      <FaGoogle className="h-4 w-4 text-red-500" />
+                      <span>Sign In with Google</span>
+                    </span>
+                  )}
+                </button>
+              </div>
+
+              <div className="text-center auth-form-field" style={{'--delay': 6} as any}>
                 <p className="text-sm text-gray-300">
                   Don't have an account?{' '}
                   <Link
