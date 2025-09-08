@@ -3,33 +3,17 @@ import React from "react";
 import { FeaturedCard } from "@/components/ui/featured-card";
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 import { motion } from "framer-motion";
+import { papers } from "@/data/papers";
 
-const featuredArticles = [
-  {
-    id: 1,
-    title: "AI-Driven Supply Chain Optimization",
-    subtitle: "Revolutionary machine learning approaches for logistics",
-    description: "Explore cutting-edge algorithms that transform traditional supply chain management through predictive analytics and real-time optimization.",
-    cardText: "AI",
-    link: "/papers/ai-supply-chain"
-  },
-  {
-    id: 2,
-    title: "Quantum Computing in Financial Markets",
-    subtitle: "Next-generation computational finance models",
-    description: "Discover how quantum algorithms are reshaping portfolio optimization, risk assessment, and high-frequency trading strategies.",
-    cardText: "QC",
-    link: "/papers/quantum-finance"
-  },
-  {
-    id: 3,
-    title: "Blockchain Business Models",
-    subtitle: "Decentralized frameworks for enterprise adoption",
-    description: "Comprehensive analysis of blockchain integration strategies that drive sustainable business transformation and operational efficiency.",
-    cardText: "BC",
-    link: "/papers/blockchain-business"
-  }
-];
+// Get first 3 papers as featured articles
+const featuredArticles = papers.slice(0, 3).map((paper, index) => ({
+  id: index + 1,
+  title: paper.title,
+  subtitle: `By ${paper.authors.join(", ")}`,
+  description: paper.abstract.substring(0, 150) + "...",
+  cardText: paper.keywords?.[0]?.substring(0, 3).toUpperCase() || "AI",
+  link: `/browse/${paper.slug}`
+}));
 
 export function FeaturedSection() {
   return (
@@ -77,6 +61,7 @@ export function FeaturedSection() {
             text="Explore All Research"
             variant="teal"
             className="w-52 h-12 text-sm text-white shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+            onClick={() => window.location.href = '/browse'}
           />
         </motion.div>
       </div>

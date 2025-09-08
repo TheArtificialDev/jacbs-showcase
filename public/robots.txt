@@ -5,6 +5,13 @@ Disallow: /api/
 Disallow: /demo/
 Disallow: /etheral-demo/
 
+# Googlebot-Scholar
+User-agent: Googlebot-Scholar
+Allow: /
+Disallow: /api/
+Disallow: /demo/
+Disallow: /etheral-demo/
+
 # Host
 Host: https://jacbs.in
 

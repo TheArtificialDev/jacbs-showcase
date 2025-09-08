@@ -1,8 +1,9 @@
 "use client";
 import React from "react";
+import Link from "next/link";
 import { BackgroundGradient } from "@/components/ui/background-gradient";
 import { Paper } from "@/data/papers";
-import { IconDownload, IconCalendar, IconUser } from "@tabler/icons-react";
+import { IconDownload, IconCalendar, IconUser, IconExternalLink } from "@tabler/icons-react";
 
 interface PaperCardProps {
   paper: Paper;
@@ -59,14 +60,21 @@ export function PaperCard({ paper, className }: PaperCardProps) {
         )}
 
         {/* Download Button */}
-        <div className="mt-auto">
+        <div className="mt-auto flex gap-3">
+          <Link 
+            href={`/browse/${paper.slug}`}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-full text-sm font-medium transition-colors flex-1 justify-center"
+          >
+            <IconExternalLink size={16} />
+            View Paper
+          </Link>
           <a 
             href={paper.pdfUrl} 
             download
-            className="inline-flex items-center gap-2 px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-full text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors w-fit"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-black dark:bg-white text-white dark:text-black rounded-full text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
           >
             <IconDownload size={16} />
-            Download PDF
+            PDF
           </a>
         </div>
       </div>

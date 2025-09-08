@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import Link from "next/link";
 import { BackgroundGradient } from "@/components/ui/background-gradient";
 import { InteractiveHoverButton } from "@/components/ui/interactive-hover-button";
 import { motion } from "framer-motion";
@@ -54,11 +55,13 @@ export function FeaturedCard({ article, index }: FeaturedCardProps) {
             
             {/* Button */}
             <div className="mt-auto">
-              <InteractiveHoverButton 
-                text="Read Research"
-                variant="teal"
-                className="w-full h-12 text-sm text-white"
-              />
+              <Link href={article.link}>
+                <InteractiveHoverButton 
+                  text="Read Research"
+                  variant="teal"
+                  className="w-full h-12 text-sm text-white"
+                />
+              </Link>
             </div>
           </div>
         </div>
